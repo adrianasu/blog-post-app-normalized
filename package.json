@@ -11,5 +11,8 @@
     "CRUD"
   ],
   "author": "Adriana Suarez",
-  "license": "ISC"
+  "license": "ISC",
+  "dependencies": {
+    "uuid": "^3.3.2"
+  }
 }
