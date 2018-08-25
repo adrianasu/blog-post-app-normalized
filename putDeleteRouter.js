@@ -1,9 +1,6 @@
 const express = require('express');
 const router = express.Router();
 
-const bodyParser = require('body-parser');
-const jsonParser = bodyParser.json();
-
 const {BlogPosts} = require('./models');
 
 router.put('/:id', (req,res) => {
@@ -25,15 +22,21 @@ router.put('/:id', (req,res) => {
     // }
     //success
      console.log(`Updating blog post with id \`${req.params.id}\``);
-    const post = BlogPosts.create(req.body.title, req.body.content, req.body.author, req.body.publishDate);
+    const post = BlogPosts.update({
+        id: req.params.id,
+        title: req.body.title, 
+        content: req.body.content,
+        author: req.body.author,
+        publishDate: req.body.publishDate
+    });
     res.status(201).json(post);
 });
 
 router.delete('/:id', (req, res) => {
     BlogPosts.delete(req.params.id);
     console.log(`Deleted post \`${req.params.id}\``);
-    res.status(200).json({"deleted": "${req.params.id}", "OK": "true"});
-    // res.status(204).end();
+    //res.status(200).json({"deleted": "${req.params.id}", "OK": "true"});
+    res.status(204).end();
 });
 
 module.exports = router;
