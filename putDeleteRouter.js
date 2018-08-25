@@ -18,11 +18,11 @@ router.put('/:id', (req,res) => {
         return res.status(400).send(message);
     }
     // check 2
-    if (noStringFields.length) {
-        const message = `Fields \`${missingFields.join(', ')}\` should be strings`;
-        console.error(message);
-        return res. status(400).send(message);
-    }
+    // if (noStringFields.length) {
+    //     const message = `Fields \`${missingFields.join(', ')}\` should be strings`;
+    //     console.error(message);
+    //     return res. status(400).send(message);
+    // }
     //success
      console.log(`Updating blog post with id \`${req.params.id}\``);
     const post = BlogPosts.create(req.body.title, req.body.content, req.body.author, req.body.publishDate);

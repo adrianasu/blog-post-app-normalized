@@ -26,11 +26,11 @@ router.post('/', (req,res) => {
         return res.status(400).send(message);
     }
     // check 2
-    if (noStringFields.length) {
-        const message = `Fields \`${missingFields.join(', ')}\` should be strings`;
-        console.error(message);
-        return res.status(400).send(message);
-    }
+    // if (noStringFields.length) {
+    //     const message = `Fields \`${missingFields.join(', ')}\` should be strings`;
+    //     console.error(message);
+    //     return res.status(400).send(message);
+    // }
     //success
     const post = BlogPosts.create(req.body.title, req.body.content, req.body.author);
     res.status(201).json(post);
