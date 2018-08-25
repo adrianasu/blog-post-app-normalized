@@ -14,7 +14,7 @@ router.get('/', (req, res) => {
     res.json(BlogPosts.get());
 });
 
-router.post('/', jsonParser, (req,res) => {
+router.post('/', (req,res) => {
     //ensure title, content and author are in request body
     const requiredFields = ['title', 'content', 'author'];
     const missingFields = requiredFields.filter(field => !(field in req.body));

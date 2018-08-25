@@ -6,7 +6,7 @@ const jsonParser = bodyParser.json();
 
 const {BlogPosts} = require('./models');
 
-router.put('/:id', jsonParser, (req,res) => {
+router.put('/:id', (req,res) => {
     //ensure title, content and author are in request body
     const requiredFields = ['title', 'content', 'author'];
     const missingFields = requiredFields.filter(field => !(field in req.body));
