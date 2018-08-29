@@ -10,6 +10,10 @@ app.use(express.json());
 
 app.use('/blog-posts', postsRouter);
 
+app.get("/", (req, res) => {
+    res.sendFile(__dirname + "/views/index.html");
+});
+
 let server;
 
 function runServer() {
