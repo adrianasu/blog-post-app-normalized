@@ -4,7 +4,7 @@
   "description": "CRUD API to create a blog",
   "main": "server.js",
   "scripts": {
-    "start": "node server.js"
+    "test": "mocha --exit"
   },
   "keywords": [
     "blog",
@@ -13,8 +13,24 @@
   "author": "Adriana Suarez",
   "license": "ISC",
   "dependencies": {
-    "uuid": "^3.3.2",
     "express": "^ 4.16 .3",
-    "morgan": "^1.9.0"
-  }
+    "morgan": "^1.9.0",
+    "uuid": "^3.3.2"
+  },
+  "devDependencies": {
+    "chai": "^4.1.2",
+    "mocha": "^5.2.0",
+    "chai-http": "^4.2.0"
+  },
+  "directories": {
+    "test": "test"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/adrianasu/blog-api.git"
+  },
+  "bugs": {
+    "url": "https://github.com/adrianasu/blog-api/issues"
+  },
+  "homepage": "https://github.com/adrianasu/blog-api#readme"
 }

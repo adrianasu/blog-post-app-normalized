@@ -40,6 +40,7 @@ describe('Posts', function() {
         }
         return chai.request(app)
             .post('/blog-posts')
+            .send(newPost)
             .then(function(res) {
                 expect(res).to.have.status(201);
                 expect(res).to.be.json;
@@ -65,15 +66,14 @@ describe('Posts', function() {
                 updatePost.id = res.body[0].id;
                 return chai.request(app)
                     .put(`/blog-posts/${updatePost.id}`)
-                    .send(newPost)
+                    .send(updatePost)
             })
             .then(function(res) {
                 expect(res).to.have.status(201);
                 expect(res).to.be.json;
                 expect(res.body).to.be.a('object');
                 expect(res.body).to.deep.equal(Object.assign(updatePost, {
-                    id: res.body.id,
-                    publishDate: res.body.publishDate
+                    id: res.body.id
                 }));
             });
     });
@@ -83,9 +83,9 @@ describe('Posts', function() {
             .get('/blog-posts')
             .then(function(res) {
                 return chai.request(app)
-                    .delete(`/blog-post/${res.body[0].id}`)
+                    .delete(`/blog-posts/${res.body[0].id}`)
             })
-            .then(function() {
+            .then(function(res) {
                 expect(res).to.have.status(200);
                 expect(res).to.be.json;
                 expect(res.body).to.be.a('object');
