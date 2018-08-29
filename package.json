@@ -23,9 +23,6 @@
     "mocha": "^5.2.0",
     "chai-http": "^4.2.0"
   },
-  "directories": {
-    "test": "test"
-  },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/adrianasu/blog-api.git"
