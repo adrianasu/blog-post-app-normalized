@@ -6,4 +6,4 @@ deploy:
     secure: qh64rTMJwAW861V6FKYiFVO8KsX+d3T/4QY877rjJK+LAjykWyJZy1wT+nEixLYQ+vqjH7BXbCjOqEr/AyGZ/2GJM25tzzd7eh2QpXy1hvciZUKOaI+CRU+oAgY016TslY48HfthIqkGpj5gND9ohWpR9h1CpPBZatz7n2nHHUE6m4Bu+I1y5T5Mmt/BFJmYK5GqeWmB8bKti12lAkkas+V3E3U7XHTip23tofnOuRFogTXLYlbZd0NJLhX0+vj9H4tSY+mdu3xlW2CKDnLFRQzec+EKSHQmXbG2OC13JGjMtwach0DxeKsSNtFq3WN2c5F3Hz5PlzkiKNM0wVPDt/1KicibFXlgENC5uNGwHhKnfoRskjA7smr3Mc47B3YI0DBzo9f3FeewTf/xMZGzHmq9GkHnvG9ydFQIirF64viwqdOoqH7mZJjoA/bNjllfZrlsvJ7EGHj1ZJD03XrtC4fuGPi16NJgSv/JxdGLv8yZNvbfsp6kZLPo6NxaGJQL5mdTy+J4ecv4rKPmVQNowNK3ayHbpeMgS6kJwvoV64ErF19vaKlj8jSZu+0bqmHHOQ5dMzb5YCFg8eRWGq7sfpAZYi+yqq7q4g8mmxZcm52/3BisCQjVoJ/yM7Q1nQm12OgSoSuPA2Z6Y1wD8LIgh8D/XNYG61tBxA8mXi45vz8=
   app: damp-fortress-54005
   on:
-    repo: git.heroku.com/damp-fortress-54005.git
+    repo: adrianasu/blog-api
