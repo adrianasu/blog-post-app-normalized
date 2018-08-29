@@ -4,6 +4,7 @@
   "description": "CRUD API to create a blog",
   "main": "server.js",
   "scripts": {
+    "start": "node server.js",
     "test": "mocha --exit"
   },
   "keywords": [
