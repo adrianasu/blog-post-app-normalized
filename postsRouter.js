@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-//const mongoose = require('mongoose');
+const mongoose = require('mongoose');
 
 const {BlogPosts} = require('./models');
 
@@ -10,6 +10,7 @@ router.get('/', (req, res) => {
         .limit(10)
         .then(posts => {
             console.log('Sending response from GET request');
+            console.log("p" + posts);
             res.json({posts: posts.map(post => post.serialize())
             });
         })
