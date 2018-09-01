@@ -1,16 +1,43 @@
 const express = require('express');
 const router = express.Router();
+const mongoose = require('mongoose');
 
 const {BlogPosts} = require('./models');
 
-BlogPosts.create('Whiskers arrival', 'It\'s the first time we adopt a pet. We\'re excited and nervous at the same time. But when we see Whiskers coming out of its cage we immediately know that he\'s perfect for us', 'Adriana');
-BlogPosts.create('Moving to a new city', 'We put everything in a big container and left our small apartment to go to a new city. We\'re sad to leave our friends but excited to see our new home', 'Adriana');
-BlogPosts.create('Finding our thing', 'I\'m so happy! I decided to enroll in a coding bootcamp with the idea of restarting my professional life doing something I enjoy a lot', 'Adriana');
+// BlogPosts.create('Whiskers arrival', 'It\'s the first time we adopt a pet. We\'re excited and nervous at the same time. But when we see Whiskers coming out of its cage we immediately know that he\'s perfect for us', 'Adriana');
+// BlogPosts.create('Moving to a new city', 'We put everything in a big container and left our small apartment to go to a new city. We\'re sad to leave our friends but excited to see our new home', 'Adriana');
+// BlogPosts.create('Finding our thing', 'I\'m so happy! I decided to enroll in a coding bootcamp with the idea of restarting my professional life doing something I enjoy a lot', 'Adriana');
 
+//GET requests return 10 posts
 router.get('/', (req, res) => {
-    res.json(BlogPosts.get());
+    BlogPosts.find()
+        .limit(10)
+        .then(posts => {
+            console.log('Sending response from GET request');
+            res.json({posts: posts.map(post => post.serialize())
+            });
+        })
+        .catch(err=> {
+            console.error(err);
+            res.status(500).json({message: "Internal server error"});
+        });
+    });
+
+// GET requests by id
+router.get('/:id', (req, res) => {
+    BlogPosts
+        .findById(req.params.id)
+        .then(post => {
+            console.log('Sending response from GET request by Id');
+            res.json(post.serialize())
+        })
+        .catch(err => {
+            console.error(err);
+            res.status(500).json({message: "Internal server error"});
+        });
 });
 
+// POST requests
 router.post('/', (req,res) => {
     //ensure title, content and author are in request body
     const requiredFields = ['title', 'content', 'author'];
@@ -24,45 +51,71 @@ router.post('/', (req,res) => {
     }
 
     //success
-    const post = BlogPosts.create(req.body.title, req.body.content, req.body.author);
-    res.status(201).json(post);
+    console.log('Posting a new blog post');
+    BlogPosts.create({
+        title: req.body.title, 
+        content: req.body.content, 
+        author: {
+                firstName: req.body.firstName,
+                lastName: req.body.lastName 
+        }
+    })
+    .then(post => res.status(201).json(post.serialize()))
+    .catch(err => {
+        console.error(err);
+        res.status(500).json({message: "Internal server error"})
+    })
 });
 
 router.put('/:id', (req, res) => {
-    //ensure title, content and author are in request body
-    const requiredFields = ["id", "title", "content", "author"];
-    const missingFields = requiredFields.filter(field => !(field in req.body));
-    const noStringFields = requiredFields.filter(field => typeof field === "string");
-    // check 1
-    if (missingFields.length) {
-        const message = `Missing \`${missingFields.join(', ')}\` in request body`;
+     // check that id in request body matches id in request path
+     if (req.params.id !== req.body.id) {
+         const message = `Request path id (${req.params.id}) and request body id `
+         `(${req.body.id}) must match`;
+         console.error(message);
+         return res.status(400).json({message: message});
+     }
+    // we only support a subset of fields being updateable
+    // if the user sent over any of them (title, content, author)
+    // we update those values on the database
+    const updateableFields = ["title", "content", "author"];
+    // check if request body contains any updateable field
+    if (missingFields.length === 0) {
+        const message = `Missing \`${updateableFields.join('or ')}\` in request body`;
         console.error(message);
-        return res.status(400).send(message);
+        return res.status(400).json({message: message});
     }
-    // check 2
-    if (req.params.id !== req.body.id) {
-        const message = `Request path id (${req.params.id}) and request body id `
-        `(${req.body.id}) must match`;
-        console.error(message);
-        return res.status(400).send(message);
-    }
-  
-    //success
-    console.log(`Updating blog post with id \`${req.params.id}\``);
-    const post = BlogPosts.update({
-        id: req.params.id,
-        title: req.body.title,
-        content: req.body.content,
-        author: req.body.author,
-        publishDate: req.body.publishDate
+    // check what fields were sent in the request body to update
+    const toUpdate = {};
+    updateableFields.forEach(field => {
+        if (field in req.body) {
+            toUpdate[field] = req.body[field];
+        }
     });
-    res.status(201).send(post);
+  
+    //success! all key/value pairs in toUpdate will be updated
+    console.log(`Updating blog post with id \`${req.params.id}\``);
+    BlogPosts
+        .findByIdAndUpdate(req.params.id, {$set: toUpdate})
+        .then(post => res.status(201).json(post.serialize()))
+        .catch(err => res.status(500).json({message: "Internal server error"}));
 });
 
 router.delete('/:id', (req, res) => {
-    BlogPosts.delete(req.params.id);
-    console.log(`Deleted post \`${req.params.id}\``);
-    res.status(200).send({"deleted": "${req.params.id}", "OK": "true"});
+    BlogPosts
+        .findByIdAndRemove(req.params.id)
+        .then(post => {
+            res.status(200).json({
+            deleted: "${req.params.id}",
+            OK: "true"
+             });
+             console.log(`Deleted post \`${req.params.id}\``);
+        })
+        .catch(err => res.status(500).json({message: "Internal server error"}));
+});
+
+router.use("*", function(req, res) {
+    res.status(404).json({message: "Not Found"});
 });
 
 module.exports = router;
