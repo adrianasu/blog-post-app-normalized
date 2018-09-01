@@ -7,7 +7,6 @@ const {BlogPosts} = require('./models');
 //GET requests return 10 posts
 router.get('/', (req, res) => {
     BlogPosts.find()
-        .limit(10)
         .then(posts => {
             console.log('Sending response from GET request');
             console.log("p" + posts);
@@ -52,10 +51,7 @@ router.post('/', (req,res) => {
     BlogPosts.create({
         title: req.body.title, 
         content: req.body.content, 
-        author: {
-                firstName: req.body.firstName,
-                lastName: req.body.lastName 
-        }
+        author: req.body.author,
     })
     .then(post => res.status(201).json(post.serialize()))
     .catch(err => {

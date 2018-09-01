@@ -1,12 +1,15 @@
-const uuid = require('uuid');
+//const uuid = require('uuid');
 const mongoose = require('mongoose');
+mongoose.Promise = global.Promise;
 
 const BlogPostsSchema = mongoose.Schema({
-    id: String,
     title: {type: String, required: true},
     content: {type: String, required: true},
-    author: {type: Object, required: true},
-    created: Date
+    author: {
+        firstName:String,
+        lastName: String
+    },
+    created: {type: Date, default:Date.now}
 });
 
 //virtual that sets author object into a string
@@ -19,6 +22,7 @@ BlogPostsSchema.virtual("authorString").get(function() {
 // exposing only the fields we want from the underlying data
 BlogPostsSchema.methods.serialize = function() {
     return {
+        id: this._id,
         title: this.title,
         content: this.content,
         author: this.authorString,
