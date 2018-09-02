@@ -16,11 +16,11 @@ app.use(express.json());
 //     res.sendFile(__dirname + "/views/index.html");
 // });
 
-const {BlogPosts} = require('./models');
+const {Posts} = require('./models');
 
 //GET requests return 10 posts
 app.get('/blog-posts', (req, res) => {
-    BlogPosts.find()
+    Posts.find()
         .then(posts => {
             console.log('Sending response from GET request');
             res.json({
@@ -37,7 +37,7 @@ app.get('/blog-posts', (req, res) => {
 
 // GET requests by id
 app.get('/blog-posts/:id', (req, res) => {
-    BlogPosts
+    Posts
         .findById(req.params.id)
         .then(post => {
             console.log('Sending response from GET request by Id');
@@ -66,7 +66,7 @@ app.post('/blog-posts', (req, res) => {
 
     //success
     console.log('Posting a new blog post');
-    BlogPosts.create({
+    Posts.create({
             title: req.body.title,
             content: req.body.content,
             author: req.body.author,
@@ -95,7 +95,7 @@ app.put('/blog-posts/:id', (req, res) => {
     // we update those values on the database
     const updateableFields = ["title", "content", "author"];
     // check if request body contains any updateable field
-    if (missingFields.length === 0) {
+    if (updateableFields.length === 0) {
         const message = `Missing \`${updateableFields.join('or ')}\` in request body`;
         console.error(message);
         return res.status(400).json({
@@ -112,7 +112,7 @@ app.put('/blog-posts/:id', (req, res) => {
 
     //success! all key/value pairs in toUpdate will be updated
     console.log(`Updating blog post with id \`${req.params.id}\``);
-    BlogPosts
+    Posts
         .findByIdAndUpdate(req.params.id, {
             $set: toUpdate
         })
@@ -123,11 +123,11 @@ app.put('/blog-posts/:id', (req, res) => {
 });
 
 app.delete('/blog-posts/:id', (req, res) => {
-    BlogPosts
+    Posts
         .findByIdAndRemove(req.params.id)
         .then(post => {
             res.status(200).json({
-                deleted: "${req.params.id}",
+                deleted: `${req.params.id}`,
                 OK: "true"
             });
             console.log(`Deleted post \`${req.params.id}\``);
