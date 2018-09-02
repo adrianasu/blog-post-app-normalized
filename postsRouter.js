@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const mongoose = require('mongoose');
+//const mongoose = require('mongoose');
 
 const {BlogPosts} = require('./models');
 
@@ -9,7 +9,6 @@ router.get('/', (req, res) => {
     BlogPosts.find()
         .then(posts => {
             console.log('Sending response from GET request');
-            console.log("p" + posts);
             res.json({posts: posts.map(post => post.serialize())
             });
         })
@@ -107,7 +106,7 @@ router.delete('/:id', (req, res) => {
         .catch(err => res.status(500).json({message: "Internal server error"}));
 });
 
-router.use("*", function(req, res) {
+router.use('*', function(req, res) {
     res.status(404).json({message: "Not Found"});
 });
 

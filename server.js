@@ -4,7 +4,7 @@ const mongoose = require('mongoose');
 
 mongoose.Promise = global.Promise;
 
-const {PORT, DATABASE_URL} = require("./config");
+const {DATABASE_URL, PORT} = require("./config");
 
 
 const app = express();
@@ -16,9 +16,9 @@ app.use(express.json());
 
 app.use('/blog-posts', postsRouter);
 
-app.get("/", (req, res) => {
-    res.sendFile(__dirname + "/views/index.html");
-});
+// app.get("/", (req, res) => {
+//     res.sendFile(__dirname + "/views/index.html");
+// });
 
 let server;
 
