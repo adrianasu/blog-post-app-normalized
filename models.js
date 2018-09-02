@@ -1,6 +1,6 @@
 //const uuid = require('uuid');
 const mongoose = require('mongoose');
-//mongoose.Promise = global.Promise;
+mongoose.Promise = global.Promise;
 
 const BlogPostsSchema = mongoose.Schema({
     title: {type: String, required: true},
