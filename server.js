@@ -6,7 +6,6 @@ mongoose.Promise = global.Promise;
 
 const {DATABASE_URL, PORT} = require("./config");
 
-
 const app = express();
 
 app.use(morgan('common'));
@@ -51,13 +50,11 @@ app.get('/blog-posts/:id', (req, res) => {
         });
 });
 
-// POST requests
 app.post('/blog-posts', (req, res) => {
     //ensure title, content and author are in request body
     const requiredFields = ['title', 'content', 'author'];
     const missingFields = requiredFields.filter(field => !(field in req.body));
-    const noStringFields = requiredFields.filter(field => typeof field === "string");
-    // check 1
+    // check for missing fields
     if (missingFields.length) {
         const message = `Missing \`${missingFields.join(', ')}\` in request body`;
         console.error(message);
@@ -142,8 +139,6 @@ app.use('*', function (req, res) {
         message: "Not Found"
     });
 });
-
-
 
 let server;
 
