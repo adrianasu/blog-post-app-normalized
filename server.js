@@ -79,11 +79,7 @@ app.post('/posts', (req, res) => {
     Author
         .findById(req.body.author_id)
         .then(author => {
-            if (!author) {
-                const message = `Author with ${req.body.author_id} id not found`;
-                console.error(message);
-                return res.status(400).send(message);
-            }
+            if (author) {
             // success. Create blog post
             console.log('Posting a new blog post');
             Posts
@@ -93,9 +89,10 @@ app.post('/posts', (req, res) => {
                     author: req.body.author_id
                 })
                 .then(post => res.status(201).json({
+                    id: post._id,
                     title: post.title,
                     content: post.content,
-                    author: post.authorString,
+                    author: `${author.firstName} ${author.lastName}`,
                     created: post.created,
                     comments: post.comments
                 }))
@@ -105,7 +102,12 @@ app.post('/posts', (req, res) => {
                         message: "Internal server error"
                     })
                 })
-
+            }
+            else {
+                   const message = `Author with ${req.body.author_id} id not found`;
+                   console.error(message);
+                   return res.status(400).send(message);
+            }
         })
         .catch(err => {
             console.error(err);
@@ -118,8 +120,7 @@ app.post('/posts', (req, res) => {
 app.put('/posts/:id', (req, res) => {
     // check that id in request body matches id in request path
     if (req.params.id !== req.body.id) {
-        const message = `Request path id (${req.params.id}) and request body id `
-        `(${req.body.id}) must match`;
+        const message = `Request path id ${req.params.id} and request body id ${req.body.id} must match`;
         console.error(message);
         return res.status(400).json({
             message: message
@@ -148,13 +149,11 @@ app.put('/posts/:id', (req, res) => {
     //success! all key/value pairs in toUpdate will be updated
     console.log(`Updating blog post with id \`${req.params.id}\``);
     Posts
-        .findByIdAndUpdate(req.params.id, {
-            $set: toUpdate
-        })
+        .findByIdAndUpdate(req.params.id, {$set: toUpdate}, {new: true})
         .then(post => res.status(201).json({
             title: post.title,
             content: post.content,
-            author: post.authorString,
+            //author: post.authorString,
             created: post.created
         }))
         .catch(err => res.status(500).json({
@@ -177,6 +176,26 @@ app.delete('/posts/:id', (req, res) => {
         }));
 });
 
+app.get('/authors', (req, res) => {
+    Author
+        .find()
+        .then(authors => {
+            console.log('Get all authors');
+            res.status(200).json(
+                authors.map(author => {
+                    return {
+                        firstName: `${author.firstName}`,
+                        lastName: `${author.lastName}`,
+                        userName: author.userName
+                    }
+            }))
+        })
+        .catch(err=> {
+            consolel.error(err);
+            return res.status(500).json({message: 'Internal server error'});
+        })
+});
+
 app.post('/authors', (req, res) => {
     // check that the request body includes firstName, lastName and userName
     const requiredFields = ['firstName', 'lastName', 'userName'];
@@ -188,27 +207,36 @@ app.post('/authors', (req, res) => {
     }
     // check that userName is not already taken
     Author
-        .find({userName: req.body.userName})
+        .findOne({userName: req.body.userName})
         .then(author => {
             if (author) {
                 const message = `The username ${req.body.userName} is already taken`;
                 console.error(message);
                 return res.status(400).json({message: message});
             }
+            else {
+                Author
+                    .create({
+                        firstName: req.body.firstName,
+                        lastName: req.body.lastName,
+                        userName: req.body.userName
+                    })
+                    .then(author => res.status(201).json({
+                        _id: author.id,
+                        name: `${req.body.firstName} ${req.body.lastName}`,
+                        userName: author.userName
+                    }))
+                    .catch(err => {
+                        console.error(err);
+                        res.status(500).json({message: "Internal server error"})
+                    })
+            }
         })
-        .create({
-            firstName: req.body.firstName,
-            lastName: req.body.lastName,
-            userName: req.body.userName
-        })
-        .then(author => res.status(201).json({
-            _id: author.id,
-            name: author.authorString,
-            userName: author.userName
-        }))
         .catch(err => {
             console.error(err);
-            res.status(500).json({message: "Internal server error"})
+            res.status(500).json({
+                message: "Internal server error"
+            })
         })
 })
 
@@ -245,38 +273,49 @@ app.put('/authors/:id', (req,res) => {
     }
 
     Author
-        .findOne({username: req.body.userName})
+        .findOne({_id: req.body.id})
         .then(author => {
             if (author) {
-                const message = `Username ${author.userName} is already taken`;
-                console.error(message);
-                return res.status(400).json({message: message});
+                Author
+                    .findByIdAndUpdate(req.body.id, {$set: toUpdateFields}, {new: true})
+                    .then(updatedAuthor => {
+                        return res.status(200).json({
+                            id: updatedAuthor._id,
+                            name: `${updatedAuthor.firstName} ${updatedAuthor.lastName}`,
+                            username: updatedAuthor.userName
+                        })
+                    })
+                    .catch(err => {
+                        console.error(err);
+                        res.status(500).json({message: 'Internal server error'})
+                    })
+                }
+            else {
+                    const message = `Username with id ${req.body.id} doesn't exist`;
+                    console.error(message);
+                    return res.status(400).json({
+                        message: message
+                    });
             }
-        })
-        .findByIdAndUpdate(req.body.id, {$set: toUpdateFields}, {new: true})
-        .then(updatedAuthor => {
-            res.status(200).json({
-                id: updatedAuthor._id,
-                name: `${updatedAuthor.firstName} ${updatedAuthor.lastName}`,
-                username: updatedAuthor.userName
             })
-        })
-        .catch(err => {
-            console.error(err);
-            res.status(500).json({message: 'Internal server error'})
-        })
+            .catch(err => {
+                console.error(err);
+                res.status(500).json({
+                    message: 'Internal server error'
+                })
+            })
 })
 
 app.delete('/authors/:id', (req, res) => {
     Posts
-        .findAndRemove({author: req.params.id})
+        .remove({author: req.params.id})
         .then(posts => {
             console.log('Removed author from posts');
             Author
                 .findByIdAndRemove(req.params.id)
                 .then(author => {
                     console.log(`Removed blog posts owned by author with id ${req.params.id}`);
-                    res.status(204).json({message: `author ${req.params.id} deleted`});
+                    res.status(200).json({message: `author ${req.params.id} deleted`});
                 })
         })
         .catch(err => {
