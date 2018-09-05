@@ -162,7 +162,7 @@ describe('Posts API resource', function() {
         });
     });
 
------------Falta PUT and DELETE---------------
+//-----------Falta PUT and DELETE---------------
 
     it('Should update a post on PUT', function() {
         const updatePost = {
