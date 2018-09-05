@@ -17,7 +17,7 @@ app.use(express.json());
 
 const {Posts, Author} = require('./models');
 
-//GET requests return 10 posts
+//GET requests return all posts
 app.get('/posts', (req, res) => {
     Posts
         .find()
