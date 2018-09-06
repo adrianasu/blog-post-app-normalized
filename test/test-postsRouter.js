@@ -2,6 +2,8 @@ const chai = require('chai');
 const chaiHttp = require('chai-http');
 const mongoose = require('mongoose');
 const faker = require('faker');
+const uuid = require('uuid');
+
 
 const { app, closeServer, runServer } = require('../server');
 const { Posts, Authors } = require('../models');
@@ -60,7 +62,7 @@ function seedPostData(authors) {
 function seedBlogData() {
     return seedAuthorData()
         .then(authors => {
-                seedPostData(authors)})
+                return seedPostData(authors)})
         .catch(err => {
             console.error(err);
         })
@@ -77,7 +79,7 @@ describe('Posts API resource', function() {
     before(function () {
         return runServer(TEST_DATABASE_URL);
     });
-// hook function to seed the db before starting each test
+    // hook function to seed the db before starting each test
     beforeEach(function () {
         return seedBlogData();
     });
@@ -85,7 +87,6 @@ describe('Posts API resource', function() {
     afterEach(function () {
         return tearDownDb();
     });
-
     after(function () {
         return closeServer();
     });
@@ -93,9 +94,11 @@ describe('Posts API resource', function() {
     describe('GET all posts endpoint', function() {
 
         it('Should return all posts on GET', function() {
+            let res;
             return chai.request(app)
                 .get('/posts')
-                .then(function (res) {
+                .then(function (_res) {
+                    res = _res;
                     expect(res).to.have.status(200);
                     expect(res).to.be.json;
                     expect(res.body).to.be.a('array');
@@ -103,7 +106,7 @@ describe('Posts API resource', function() {
                     return Posts.count();
                 })
                 .then(function(count) {
-                    expect(res.body.posts).to.have.lengthOf(count);
+                    expect(res.body).to.have.lengthOf(count);
                 })
         });
 
@@ -113,50 +116,55 @@ describe('Posts API resource', function() {
                 .get('/posts')
                 .then(function (res) {
                     const expectedKeys = ['title', 'content', 'author', 'created'];
+                    console.log(JSON.stringify(res.body));
                     res.body.forEach(function (post) {
                         expect(post).to.be.a('object');
                         expect(post).to.include.keys(expectedKeys);
                     });
-                    resPost = res.body.posts[0];
+                    console.log(res.body[0]);
+                    resPost = res.body[0];
                     return Posts.findById(resPost.id);
                 })
                 .then(function (post) {
                     expect(resPost.title).to.equal(post.title);
                     expect(resPost.content).to.equal(post.content);
-                    expect(resPost.author).to.equal(post.author);
+                    expect(resPost.author).to.equal(post.authorString);
                 });
         });
     });
 
     describe('POST endpoint', function() {
-        it('Should add a post on POST', function() {
+        it('Should add a new post', function() {
             let newPost;
-            generateAuthorData()
-                .then(function(id) {
-                    return newPost = generatePostData(id)});
-
-            return chai.request(app)
-                .post('/posts')
-                .send(newPost)
-                .then(function(res) {
-                    expect(res).to.have.status(201);
-                    expect(res).to.be.json;
-                    expect(res.body).to.be.a('object');
-                    expect(res.body).to.include.keys('title', 'content', 'author', 'created', 'comments');
-                    expect(res.body.id).to.not.equal(null);
-                    expect(res.body.title).to.equal(newPost.title);
-                    expect(res.body.content).to.equal(newPost.content);
-                    expect(res.body.author).to.equal(newPost.author);
-                    expect(res.body.created).to.equal(newPost.created);
-                    expect(res.body.comments).to.equal(newPost.comments);
-                    return Posts.findById(res.body.id);
+            Authors
+                .findOne()
+                .then(function(author) {
+                    return newPost = generatePostData(author._id);
                 })
-                .then(function(post) {
-                    expect(post.title).to.equal(newPost.title);
-                    expect(post.content).to.equal(newPost.content);
-                    expect(post.author).to.equal(newPost.author);
-                    expect(post.created).to.equal(newPost.created);
-                    expect(post.comments).to.equal(newPost.comments);
+                .then(function(newPost) {
+                    return chai.request(app)
+                        .post('/posts')
+                        .send(newPost)
+                        .then(function(res) {
+                            expect(res).to.have.status(201);
+                            expect(res).to.be.json;
+                            expect(res.body).to.be.a('object');
+                            expect(res.body).to.include.keys('title', 'content', 'author', 'created', 'comments');
+                            expect(res.body.id).to.not.equal(null);
+                            expect(res.body.title).to.equal(newPost.title);
+                            expect(res.body.content).to.equal(newPost.content);
+                            expect(res.body.author).to.equal(newPost.author);
+                            expect(res.body.created).to.equal(newPost.created);
+                            expect(res.body.comments).to.equal(newPost.comments);
+                            return Posts.findById(res.body.id);
+                        })
+                        .then(function(post) {
+                            expect(post.title).to.equal(newPost.title);
+                            expect(post.content).to.equal(newPost.content);
+                            expect(post.author).to.equal(newPost.author);
+                            expect(post.created).to.equal(newPost.created);
+                            expect(post.comments).to.equal(newPost.comments);
+                        });
                 });
         });
     });
@@ -167,12 +175,13 @@ describe('Posts API resource', function() {
                 title: "Good morning",
                 content: "Updated content"
             };
-            return Posts
+             Posts
                 .findOne()
                 .then(function(post) {
-                    updateData.id = post.id;
+                    console.log(post);
+                    updateData.id = post._id;
                     return chai.request(app)
-                        .put(`/posts/${updateData.id}`)
+                        .put(`/posts/${post._id}`)
                         .send(updateData)
                 })
                 .then(function(res) {
@@ -191,19 +200,19 @@ describe('Posts API resource', function() {
     describe('DELETE endpoint', function() {
         it('Should delete a post by id', function() {
             let post;
-            return Posts
+            Posts
                 .findOne()
                 .then(function(_post) {
-                    post = _post
+                    post = _post;
                     return chai.request(app)
-                        .delete(`/posts/${post.id}`)
+                        .delete(`/posts/${_post._id}`)
                 })
                 .then(function(res) {
                     expect(res).to.have.status(200);
                     expect(res).to.be.json;
                     expect(res.body).to.be.a('object');
                     expect(res.body.deleted).to.not.equal(null);
-                    return Posts.findById(post.id);                    
+                    return Posts.findById(post._id);                    
                 })
                 .then(function(_post) {
                     expect(_post).to.be.null;

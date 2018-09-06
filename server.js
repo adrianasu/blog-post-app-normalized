@@ -22,10 +22,11 @@ app.get('/posts', (req, res) => {
     Posts
         .find()
         .then(posts => {
-            console.log('Sending response from GET request');
-            res.json(
+            console.log('Sending response from GET request ');
+            res.status(200).json(
                 posts.map(post => {
                     return {
+                        id: post._id,
                         title: post.title,
                         content: post.content,
                         author: post.authorString,
@@ -35,7 +36,7 @@ app.get('/posts', (req, res) => {
             )
          })
         .catch(err => {
-            console.error(err);
+            console.error("Get POST error ");
             res.status(500).json({
                 message: "Internal server error"
             });
@@ -66,7 +67,7 @@ app.get('/posts/:id', (req, res) => {
 
 app.post('/posts', (req, res) => {
     //ensure title, content and author_id are in request body
-    const requiredFields = ['title', 'content', 'author_id'];
+    const requiredFields = ['title', 'content', 'author'];
     const missingFields = requiredFields.filter(field => !(field in req.body));
     // check for missing fields
     if (missingFields.length) {
@@ -77,7 +78,7 @@ app.post('/posts', (req, res) => {
 
     // first look for author in Author collection
     Authors
-        .findById(req.body.author_id)
+        .findById(req.body.author)
         .then(author => {
             if (author) {
             // success. Create blog post
@@ -86,7 +87,7 @@ app.post('/posts', (req, res) => {
                 .create({
                     title: req.body.title,
                     content: req.body.content,
-                    author: req.body.author_id
+                    author: req.body.author
                 })
                 .then(post => res.status(201).json({
                     id: post._id,
