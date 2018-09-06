@@ -162,44 +162,53 @@ describe('Posts API resource', function() {
         });
     });
 
-//-----------Falta PUT and DELETE---------------
-
-    it('Should update a post on PUT', function() {
-        const updatePost = {
-            title: 'Christmas Vacation',
-            content: "It's always exciting going back home and see mom and dad.",
-            author: 'You'
-        }
-        return chai.request(app)
-            .get('/blog-posts')
-            .then(function(res) {
-                updatePost.id = res.body[0].id;
-                return chai.request(app)
-                    .put(`/blog-posts/${updatePost.id}`)
-                    .send(updatePost)
-            })
-            .then(function(res) {
-                expect(res).to.have.status(201);
-                expect(res).to.be.json;
-                expect(res.body).to.be.a('object');
-                expect(res.body).to.deep.equal(Object.assign(updatePost, {
-                    id: res.body.id
-                }));
+    describe('PUT endpoint', function() {
+        it('Should update title and content', function() {
+            const updateData = {
+                title: "Good morning",
+                content: "Updated content"
+            };
+            return Posts
+                .findOne()
+                .then(function(post) {
+                    updateData.id = post.id;
+                    return chai.request(app)
+                        .put(`/posts/${updateData.id}`)
+                        .send(updateData)
+                })
+                .then(function(res) {
+                    expect(res).to.have.status(201);
+                    expect(res).to.be.json;
+                    expect(res.body).to.be.a('object');
+                    return Posts.findById(updateData.id);
+                })
+                .then(function(post) {
+                    expect(post.title).to.equal(updateData.title);
+                    expect(post.content).to.equal(updateData.content);
+                });
             });
     });
-
-    it('Should delete post on DELETE', function() {
-        return chai.request(app)
-            .get('/blog-posts')
-            .then(function(res) {
-                return chai.request(app)
-                    .delete(`/blog-posts/${res.body[0].id}`)
-            })
-            .then(function(res) {
-                expect(res).to.have.status(200);
-                expect(res).to.be.json;
-                expect(res.body).to.be.a('object');
-                expect(res.body.deleted).to.not.equal(null);
-            });
+    
+    describe('DELETE endpoint', function() {
+        it('Should delete a post by id', function() {
+            let post;
+            return Posts
+                .findOne()
+                .then(function(_post) {
+                    post = _post
+                    return chai.request(app)
+                        .delete(`/posts/${post.id}`)
+                })
+                .then(function(res) {
+                    expect(res).to.have.status(200);
+                    expect(res).to.be.json;
+                    expect(res.body).to.be.a('object');
+                    expect(res.body.deleted).to.not.equal(null);
+                    return Posts.findById(post.id);                    
+                })
+                .then(function(_post) {
+                    expect(_post).to.be.null;
+                });     
+        });
     });
 });
