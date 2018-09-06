@@ -4,7 +4,7 @@ const mongoose = require('mongoose');
 const faker = require('faker');
 
 const { app, closeServer, runServer } = require('../server');
-const { Posts, Author } = require('../models');
+const { Posts, Authors } = require('../models');
 const {TEST_DATABASE_URL} = require('../config');
 
 // to make the "expect" syntax available through 
@@ -17,7 +17,6 @@ chai.use(chaiHttp);
 // for author, title, content and put those random documents in db.
 function generatePostData(id) {
     return {
-        id: faker.random.number(),
         title: faker.lorem.sentence(),
         content: faker.lorem.paragraph(),
         author: id
@@ -29,10 +28,9 @@ function generatePostData(id) {
 // as an argument from the generatePostData object created
 function generateAuthorData() {
     return {
-        id: faker.random.number(),
-        firstName: faker.random.first_name(),
-        lastName: faker.random.last_name(),
-        username: faker.internet.userName()
+        firstName: faker.name.firstName(),
+        lastName: faker.name.lastName(),
+        userName: faker.internet.userName()
     }
 }
 
@@ -42,7 +40,7 @@ function seedAuthorData() {
     for (let x = 1; x <= 5; x++) {
         seedAuthors.push(generateAuthorData());
     }
-    return Author.insertMany(seedAuthors);
+    return Authors.insertMany(seedAuthors);
 }
 
 function getAuthorId(authors) {
@@ -50,18 +48,19 @@ function getAuthorId(authors) {
 }
 
 function seedPostData(authors) {
-    console.info('Seeding blog data');
+    console.info('Seeding posts data');
     const seedPosts = [];
     for (let x = 1; x <= 10; x++) {
-        seedPosts.push(generatePostData(getAuthorId(authors)));
+        let id = getAuthorId(authors);
+        seedPosts.push(generatePostData(id));
     }
     return Posts.insertMany(seedPosts);
 }
 
 function seedBlogData() {
     return seedAuthorData()
-        .then(authors => 
-                seedPostData(authors))
+        .then(authors => {
+                seedPostData(authors)})
         .catch(err => {
             console.error(err);
         })

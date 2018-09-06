@@ -15,7 +15,7 @@ app.use(express.json());
 //     res.sendFile(__dirname + "/views/index.html");
 // });
 
-const {Posts, Author} = require('./models');
+const {Posts, Authors} = require('./models');
 
 //GET requests return all posts
 app.get('/posts', (req, res) => {
@@ -76,7 +76,7 @@ app.post('/posts', (req, res) => {
     }
 
     // first look for author in Author collection
-    Author
+    Authors
         .findById(req.body.author_id)
         .then(author => {
             if (author) {
@@ -177,7 +177,7 @@ app.delete('/posts/:id', (req, res) => {
 });
 
 app.get('/authors', (req, res) => {
-    Author
+    Authors
         .find()
         .then(authors => {
             console.log('Get all authors');
@@ -206,7 +206,7 @@ app.post('/authors', (req, res) => {
         return res.status(400).json({message: message});
     }
     // check that userName is not already taken
-    Author
+    Authors
         .findOne({userName: req.body.userName})
         .then(author => {
             if (author) {
@@ -215,7 +215,7 @@ app.post('/authors', (req, res) => {
                 return res.status(400).json({message: message});
             }
             else {
-                Author
+                Authors
                     .create({
                         firstName: req.body.firstName,
                         lastName: req.body.lastName,
@@ -272,11 +272,11 @@ app.put('/authors/:id', (req,res) => {
         })
     }
 
-    Author
+    Authors
         .findOne({_id: req.body.id})
         .then(author => {
             if (author) {
-                Author
+                Authors
                     .findByIdAndUpdate(req.body.id, {$set: toUpdateFields}, {new: true})
                     .then(updatedAuthor => {
                         return res.status(200).json({
@@ -311,7 +311,7 @@ app.delete('/authors/:id', (req, res) => {
         .remove({author: req.params.id})
         .then(posts => {
             console.log('Removed author from posts');
-            Author
+            Authors
                 .findByIdAndRemove(req.params.id)
                 .then(author => {
                     console.log(`Removed blog posts owned by author with id ${req.params.id}`);

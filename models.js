@@ -1,7 +1,7 @@
 const mongoose = require('mongoose');
 mongoose.Promise = global.Promise;
 
-const AuthorSchema = mongoose.Schema({
+const AuthorsSchema = mongoose.Schema({
     firstName: String,
     lastName: String,
     userName: {type: String, unique: true}
@@ -16,7 +16,7 @@ const BlogPostsSchema = mongoose.Schema({
     content: {type: String, required: true},
     author: {
         type: mongoose.Schema.Types.ObjectId,
-        ref: "Author"
+        ref: "Authors"
     },
     comments: [CommentSchema],
     created: {type: Date, default:Date.now}
@@ -58,6 +58,6 @@ BlogPostsSchema.methods.serialize = function() {
  // after all instance methods and virtual properties have
  // been defined, we make the call to '.model'
  const Posts = mongoose.model("Post", BlogPostsSchema);
- const Author = mongoose.model("Author", AuthorSchema);
+ const Authors = mongoose.model("Authors", AuthorsSchema);
 
-module.exports = { Posts, Author };
+module.exports = { Posts, Authors };
