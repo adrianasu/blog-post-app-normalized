@@ -1,7 +1,4 @@
-// tell travis we're testing a node program
 language: node_js
-// tell travis to use the most recent version of node
 node_js: node
-// tell travis we wnat to run a MongoDB
 services:
 - mongodb
