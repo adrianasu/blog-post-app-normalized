@@ -77,13 +77,13 @@ app.post('/posts', (req, res) => {
     }
 
     // first look for author in Author collection
-    Authors
+    return Authors
         .findById(req.body.author)
         .then(author => {
             if (author) {
             // success. Create blog post
             console.log('Posting a new blog post');
-            Posts
+            return Posts
                 .create({
                     title: req.body.title,
                     content: req.body.content,
@@ -149,7 +149,7 @@ app.put('/posts/:id', (req, res) => {
 
     //success! all key/value pairs in toUpdate will be updated
     console.log(`Updating blog post with id \`${req.params.id}\``);
-    Posts
+    return Posts
         .findByIdAndUpdate(req.params.id, {$set: toUpdate}, {new: true})
         .then(post => res.status(201).json({
             title: post.title,
@@ -163,7 +163,7 @@ app.put('/posts/:id', (req, res) => {
 });
 
 app.delete('/posts/:id', (req, res) => {
-    Posts
+    return Posts
         .findByIdAndRemove(req.params.id)
         .then(post => {
             res.status(200).json({

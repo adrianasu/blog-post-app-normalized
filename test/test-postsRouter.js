@@ -74,6 +74,23 @@ function tearDownDb() {
     return mongoose.connection.dropDatabase();
 }
 
+function checkResponse(res, statusCode, resType) {
+    expect(res).to.have.status(statusCode);
+    expect(res).to.be.json;
+    expect(res.body).to.be.a(resType);
+}
+
+function checkResponseContent(resPost, post, authorId) {
+    expect(resPost.title).to.equal(post.title);
+    expect(resPost.content).to.equal(post.content);
+    if (authorId) {
+        expect(resPost.author).to.deep.equal(post.author._id);
+    }
+    else {
+        expect(resPost.author).to.equal(post.authorString);
+    }
+}
+
 describe('Posts API resource', function() {
     
     before(function () {
@@ -99,9 +116,7 @@ describe('Posts API resource', function() {
                 .get('/posts')
                 .then(function (_res) {
                     res = _res;
-                    expect(res).to.have.status(200);
-                    expect(res).to.be.json;
-                    expect(res.body).to.be.a('array');
+                    checkResponse(res, 200, 'array');
                     expect(res.body.length).to.be.at.least(1);
                     return Posts.count();
                 })
@@ -116,19 +131,16 @@ describe('Posts API resource', function() {
                 .get('/posts')
                 .then(function (res) {
                     const expectedKeys = ['title', 'content', 'author', 'created'];
-                    console.log(JSON.stringify(res.body));
+                    //console.log(JSON.stringify(res.body));
                     res.body.forEach(function (post) {
                         expect(post).to.be.a('object');
                         expect(post).to.include.keys(expectedKeys);
                     });
-                    console.log(res.body[0]);
                     resPost = res.body[0];
                     return Posts.findById(resPost.id);
                 })
                 .then(function (post) {
-                    expect(resPost.title).to.equal(post.title);
-                    expect(resPost.content).to.equal(post.content);
-                    expect(resPost.author).to.equal(post.authorString);
+                    checkResponseContent(resPost, post);
                 });
         });
     });
@@ -136,7 +148,7 @@ describe('Posts API resource', function() {
     describe('POST endpoint', function() {
         it('Should add a new post', function() {
             let newPost;
-            Authors
+            return Authors
                 .findOne()
                 .then(function(author) {
                     return newPost = generatePostData(author._id);
@@ -146,24 +158,14 @@ describe('Posts API resource', function() {
                         .post('/posts')
                         .send(newPost)
                         .then(function(res) {
-                            expect(res).to.have.status(201);
-                            expect(res).to.be.json;
-                            expect(res.body).to.be.a('object');
+                            checkResponse(res, 201, 'object');
                             expect(res.body).to.include.keys('title', 'content', 'author', 'created', 'comments');
                             expect(res.body.id).to.not.equal(null);
-                            expect(res.body.title).to.equal(newPost.title);
-                            expect(res.body.content).to.equal(newPost.content);
-                            expect(res.body.author).to.equal(newPost.author);
-                            expect(res.body.created).to.equal(newPost.created);
-                            expect(res.body.comments).to.equal(newPost.comments);
+                            //console.log(JSON.stringify(res.body));
                             return Posts.findById(res.body.id);
                         })
                         .then(function(post) {
-                            expect(post.title).to.equal(newPost.title);
-                            expect(post.content).to.equal(newPost.content);
-                            expect(post.author).to.equal(newPost.author);
-                            expect(post.created).to.equal(newPost.created);
-                            expect(post.comments).to.equal(newPost.comments);
+                            checkResponseContent(newPost, post, post.author._id);
                         });
                 });
         });
@@ -175,19 +177,16 @@ describe('Posts API resource', function() {
                 title: "Good morning",
                 content: "Updated content"
             };
-             Posts
+             return Posts
                 .findOne()
                 .then(function(post) {
-                    console.log(post);
                     updateData.id = post._id;
                     return chai.request(app)
                         .put(`/posts/${post._id}`)
                         .send(updateData)
                 })
                 .then(function(res) {
-                    expect(res).to.have.status(201);
-                    expect(res).to.be.json;
-                    expect(res.body).to.be.a('object');
+                    checkResponse(res, 201, 'object');
                     return Posts.findById(updateData.id);
                 })
                 .then(function(post) {
@@ -200,7 +199,7 @@ describe('Posts API resource', function() {
     describe('DELETE endpoint', function() {
         it('Should delete a post by id', function() {
             let post;
-            Posts
+            return Posts
                 .findOne()
                 .then(function(_post) {
                     post = _post;
@@ -208,9 +207,7 @@ describe('Posts API resource', function() {
                         .delete(`/posts/${_post._id}`)
                 })
                 .then(function(res) {
-                    expect(res).to.have.status(200);
-                    expect(res).to.be.json;
-                    expect(res.body).to.be.a('object');
+                    checkResponse(res, 200, 'object');
                     expect(res.body.deleted).to.not.equal(null);
                     return Posts.findById(post._id);                    
                 })
